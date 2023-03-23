@@ -7,12 +7,7 @@
 
 #include "fp_data\images581.h"
 
-const unsigned char* fastImageSet[] = {
-	BW_monoBuffer,
-	(uint8_t *) & image_581_720x256_BW_product,
-	BW_monoBuffer,
-	(uint8_t *) & image_581_720x256_BW_product,
-	(uint8_t *) & image_581_720x256_BW_0xff, BW_0x00Buffer
-};
-
-uint8_t fastImageSet_Size = sizeof(fastImageSet)/sizeof(*fastImageSet);
+#define FastPic_1 (uint8_t *) & image_581_720x256_BW_mono
+#define FastPic_2 (uint8_t *) & image_581_720x256_BW_product
+#define FastPic_b (uint8_t *) & img_black
+#define FastPic_w (uint8_t *) & img_white

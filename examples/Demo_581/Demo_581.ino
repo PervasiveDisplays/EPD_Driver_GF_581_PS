@@ -25,15 +25,19 @@ void setup()
 {
 	EPD_Driver epdtest(EPD_SIZE, BOARD_TYPE);
 
-	// Initialize CoG
-	epdtest.COG_initial();
 	epdtest.globalUpdate(BW_monoBuffer, BW_0x00Buffer);
 	
-	delay(1000);
+	delay(2000);
 
-	// Initialize CoG
-	epdtest.COG_initial();
-	epdtest.fastUpdateSet(fastImageSet, fastImageSet_Size, 1);
+	epdtest.fastUpdate(FastPic_2, FastPic_1);
+	epdtest.fastUpdate(FastPic_1, FastPic_2);
+	epdtest.fastUpdate(FastPic_2, FastPic_1);
+	epdtest.fastUpdate(FastPic_1, FastPic_2);
+	
+	delay(2000);
+	epdtest.fastUpdate(FastPic_b, FastPic_1);
+	epdtest.fastUpdate(FastPic_w, FastPic_b);
+
 }
 
 void loop()

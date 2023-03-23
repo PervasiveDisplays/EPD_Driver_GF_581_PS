@@ -205,17 +205,7 @@ void EPD_Driver::COG_initial()
 //			- none but requires global variables on SPI pinout and config register data
 void EPD_Driver::COG_powerOff()
 {
-	uint8_t register_turnOff[] = {0x7f, 0x7d, 0x00};
-	_sendIndexData(0x09, register_turnOff, 3);
-	delay(200);
-
-	while ( digitalRead( spi_basic.panelBusy ) != HIGH );
-	
-	digitalWrite( spi_basic.panelDC, LOW );
-	digitalWrite( spi_basic.panelCS, LOW );
-	digitalWrite( spi_basic.panelBusy, LOW );
-	delay( 150 );
-	digitalWrite( spi_basic.panelReset, LOW );
+	_DCDC_softShutdown();
 }
 
 // Global Update function
@@ -224,7 +214,7 @@ void EPD_Driver::COG_powerOff()
 //			- two image data (either BW and 0x00 or BW and BWR types)
 void EPD_Driver::globalUpdate(const uint8_t * data1s, const uint8_t * data2s)
 {
-	
+	COG_initial();
     COG_getUserData(); // get user data from initial data
 
 	uint8_t iDCTL[2];
@@ -244,8 +234,6 @@ void EPD_Driver::globalUpdate(const uint8_t * data1s, const uint8_t * data2s)
     _sendIndexData(0x12, &COG_userData.RAM_RW[0], 3);
 	// send second frame
     _sendIndexData(0x11, data2s, image_data_size[_size]); // Second frame
-	
-	Serial.println("=== File uploaded ===");
 
     uint8_t data4[] = {0x7d};
     _sendIndexData(0x05, data4, 1);
@@ -300,6 +288,8 @@ void EPD_Driver::globalUpdate(const uint8_t * data1s, const uint8_t * data2s)
 //			- two image data (either BW and 0x00 or BW and BWR types)
 void EPD_Driver::fastUpdate(const uint8_t * data1s, const uint8_t * data2s)
 {
+	COG_initial();
+	// _reset(5, 2, 4, 20, 5);
 	COG_getUserData(); // get user data from initial data
 
 	uint8_t iDCTL[2];
@@ -319,8 +309,6 @@ void EPD_Driver::fastUpdate(const uint8_t * data1s, const uint8_t * data2s)
     _sendIndexData(0x12, &COG_userData.RAM_RW[0], 3);
 	// send second frame
     _sendIndexData(0x11, data2s, image_data_size[_size]); // Second frame
-
-	Serial.println("=== File uploaded ===");
 
     uint8_t data4[] = {0x7d};
     _sendIndexData(0x05, data4, 1);
@@ -363,7 +351,7 @@ void EPD_Driver::fastUpdate(const uint8_t * data1s, const uint8_t * data2s)
 
 	_displayRefresh();
 	
-	Serial.println("=== FU-upload done ===");
+	_DCDC_softShutdown();
 
 	// digitalWrite(spi_basic.panelCS, HIGH);
 }
@@ -385,7 +373,7 @@ void EPD_Driver::fastUpdateSet(const unsigned char* fastImgSet[], uint8_t fastIm
 		ii++;
 	}
 	
-	_DCDC_softShutdown();
+	// _DCDC_softShutdown();
 }
 
 
