@@ -68,21 +68,6 @@
 const uint16_t EPD_idx[] = {0x15, 0x21, 0x26, 0x27, 0x28, 0x37, 0x41, 0x43, 0x58, 0x74};
 const long image_data_size[] = { 2888, 2756, 5624, 5808, 4736, 12480, 15000, 10560, 23040, 48000};
 
-
-struct LUT_data
-{
-	uint8_t panelSet[2];
-	uint8_t vcomIntrval[1];
-	uint8_t vcomDC[1];
-	uint8_t PLLframert[1];
-	uint8_t lutC[42];
-	uint8_t lutWb_W[42];
-	uint8_t lutBW_R[42];
-	uint8_t lutWW[42];
-	uint8_t lutBB_B[42];
-	uint8_t vcomIntrval_fix[1];
-};
-
 /// @name 2- List of pre-configured boards
 /// @{
 
@@ -127,20 +112,6 @@ const pins_t boardLaunchPad_EXT3 =
 };
 
 ///
-/// @brief MSP430 and MSP432 LaunchPad configuration, tested
-///
-const pins_t boardLaunchPad_EXT2 =
-{
-    .panelBusy = 8, ///< EXT3 pin 3 Red
-    .panelDC = 9, ///< EXT3 pin 4 Orange
-    .panelReset = 10, ///< EXT3 pin 5 Yellow
-    .panelCS = 19,
-    .panelON_EXT2 = 11,
-    .panelSPI43_EXT2 = 17,
-    .flashCS = 18
-};
-
-///
 /// @brief Raspberry Pi Pico with default RP2040 configuration, tested
 ///
 const pins_t boardRaspberryPiPico_RP2040_EXT3 =
@@ -151,20 +122,6 @@ const pins_t boardRaspberryPiPico_RP2040_EXT3 =
     .panelCS = 17,
     .panelON_EXT2 = NOT_CONNECTED,
     .panelSPI43_EXT2 = NOT_CONNECTED,
-    .flashCS = 10
-};
-
-///
-/// @brief Raspberry Pi Pico with default RP2040 configuration, tested
-///
-const pins_t boardRaspberryPiPico_RP2040_EXT2 =
-{
-    .panelBusy = 13, ///< EXT3 pin 3 Red -> GP13
-    .panelDC = 12, ///< EXT3 pin 4 Orange -> GP12
-    .panelReset = 11, ///< EXT3 pin 5 Yellow -> GP11
-    .panelCS = 17,
-    .panelON_EXT2 = 8,
-    .panelSPI43_EXT2 = 7,
     .flashCS = 10
 };
 
@@ -183,18 +140,20 @@ const pins_t boardArduinoM0Pro_EXT3 =
 };
 
 ///
-/// @brief Arduino M0Pro configuration, tested
+/// @brief Espressif ESP32-DevKitC
+/// @note Numbers refer to GPIOs not pins
 ///
-const pins_t boardArduinoM0Pro_EXT2 =
+const pins_t boardESP32DevKitC_EXT3 =
 {
-    .panelBusy = 4, ///< EXT3 pin 3 Red
-    .panelDC = 5, ///< EXT3 pin 4 Orange
-    .panelReset = 6, ///< EXT3 pin 5 Yellow
-    .panelCS = 8,
-    .panelON_EXT2 = 11,
-    .panelSPI43_EXT2 = 9,
-    .flashCS = NOT_CONNECTED
+    .panelBusy = 27, ///< EXT3 pin 3 Red -> GPIO27
+    .panelDC = 26, ///< EXT3 pin 4 Orange -> GPIO26
+    .panelReset = 25, ///< EXT3 pin 5 Yellow -> GPIO25
+    .panelCS = 32, ///< EXT3 pin 9 Grey -> GPIO32
+	.panelON_EXT2 = NOT_CONNECTED,
+    .panelSPI43_EXT2 = NOT_CONNECTED, ///< BS
+    .flashCS = 33 ///< EXT3 pin 8 Violet -> GPIO33
 };
+
 /// @}
 
 ///
@@ -203,8 +162,7 @@ const pins_t boardArduinoM0Pro_EXT2 =
 ///
 
 //0x00, soft-reset, temperature, active temp, PSR0, PSR1
-const uint8_t register_data_mid[] = { 0x00, 0x0e, 0x19, 0x02, 0x0f, 0x89 };	// less than 3.7"
-const uint8_t register_data_sm[] = { 0x00, 0x0e, 0x19, 0x02, 0xcf, 0x8d };	// 3.7", 4.2", 4.37"
+const uint8_t register_data_mid[] = { 0x00 };	// less than 3.7"
 
 /// @}
 

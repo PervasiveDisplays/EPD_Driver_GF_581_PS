@@ -35,6 +35,42 @@
 
 #include "EPD_Driver.h"
 
+typedef struct
+{
+    uint8_t FORMAT_REPEAT;
+    uint8_t PHLINI_BSTSWa;
+    uint8_t PHHINI_BSTSWb;
+    uint8_t PHLVAR_DELAYa;
+    uint8_t PHHVAR_DELAYb;
+    uint8_t BSTSWa_RESERVE;
+    uint8_t BSTSWb_RESERVE;
+    uint8_t DELAY_RESERVE;
+} COG_SOFT_START_DEF;
+
+typedef struct
+{
+    uint8_t LAYOUTREV;
+    uint8_t COG_TYPE;
+    uint8_t VENDOR;
+    uint8_t WAVEFORMREV;
+    uint8_t FPLLOT[6];
+    uint8_t COLOR;
+
+    uint8_t TCON;
+    uint8_t DRFW[4];
+    uint8_t DCTL;
+    uint8_t VCOM;
+    uint8_t OSC_2nd;
+    uint8_t RAM_RW[3];
+    uint8_t DUW[6];
+    uint8_t STV_DIR;
+    uint8_t MS_SYNC;
+    uint8_t BVSS;
+    COG_SOFT_START_DEF SS[4];
+} COG_OTP_USER_DATA;
+
+COG_OTP_USER_DATA COG_userData;
+
 // ---------- PUBLIC FUNCTIONS -----------
 
 EPD_Driver::EPD_Driver(eScreen_EPD_t eScreen_EPD, pins_t board)
@@ -58,6 +94,75 @@ EPD_Driver::EPD_Driver(eScreen_EPD_t eScreen_EPD, pins_t board)
 	memcpy(register_data, register_data_mid, sizeof(register_data_mid));
 }
 
+void EPD_Driver::COG_getUserData()
+{
+    // uint8_t i = sNG;
+
+    const uint8_t COG_initialData581[128] =
+    {
+        0x10, 0x63, 0x01, 0x01, 0x56, 0x45, 0x55, 0x30, 0x35, 0x34, 0x00, 0x25, 0x00, 0x1f, 0x50, 0xc8,
+        0x09, 0x00, 0x00, 0x50, 0x10, 0x00, 0x1f, 0x50, 0x00, 0x1f, 0x03, 0x00, 0x00, 0x00, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0x84, 0x50, 0x00, 0x00, 0x01, 0x1f, 0x9f, 0x81, 0x8a, 0x0a, 0x00, 0x00, 0x01, 0x1f, 0x9f, 0x81,
+        0x88, 0x0a, 0x02, 0x00, 0x01, 0x7f, 0xff, 0x83, 0x88, 0x0a, 0x0a, 0xff, 0x00, 0x7f, 0xff, 0x81,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    };
+
+    const uint8_t * COG_initialData;
+
+	COG_initialData = COG_initialData581;
+
+    if (COG_initialData[0] == 0x10)
+    {
+        COG_userData.LAYOUTREV = COG_initialData[0x00];
+        COG_userData.COG_TYPE = COG_initialData[0x01];
+        COG_userData.VENDOR = COG_initialData[0x02];
+        COG_userData.WAVEFORMREV = COG_initialData[0x03];
+        for (uint8_t i = 0; i < 6; i++)
+        {
+            COG_userData.FPLLOT[i] = COG_initialData[0x04 + i];
+        }
+        COG_userData.COLOR = COG_initialData[0x0a];
+
+        COG_userData.TCON = COG_initialData[0x0b];
+        for (uint8_t i = 0; i < 4; i++)
+        {
+            COG_userData.DRFW[i] = COG_initialData[0x0c + i];
+        }
+
+        COG_userData.DCTL = COG_initialData[0x10];
+
+        COG_userData.VCOM = COG_initialData[0x11];
+        for (uint8_t i = 0; i < 3; i++)
+        {
+            COG_userData.RAM_RW[i] = COG_initialData[0x12 + i];
+        }
+        for (uint8_t i = 0; i < 6; i++)
+        {
+            COG_userData.DUW[i] = COG_initialData[0x15 + i];
+        }
+        COG_userData.STV_DIR = COG_initialData[0x1b];
+        COG_userData.MS_SYNC = COG_initialData[0x1c];
+        COG_userData.BVSS = COG_initialData[0x1d];
+        for (uint8_t i = 0; i < 4; i++)
+        {
+            COG_userData.SS[i].FORMAT_REPEAT = COG_initialData[0x28 + (8 * i)];
+            COG_userData.SS[i].PHLINI_BSTSWa = COG_initialData[0x28 + (8 * i) + 1];
+            COG_userData.SS[i].PHHINI_BSTSWb = COG_initialData[0x28 + (8 * i) + 2];
+            COG_userData.SS[i].PHLVAR_DELAYa = COG_initialData[0x28 + (8 * i) + 3];
+            COG_userData.SS[i].PHHVAR_DELAYb = COG_initialData[0x28 + (8 * i) + 4];
+            COG_userData.SS[i].BSTSWa_RESERVE = COG_initialData[0x28 + (8 * i) + 5];
+            COG_userData.SS[i].BSTSWb_RESERVE = COG_initialData[0x28 + (8 * i) + 6];
+            COG_userData.SS[i].DELAY_RESERVE = COG_initialData[0x28 + (8 * i) + 7];
+        }
+        // i = sOK;
+    }
+    // return i;
+}
+
 // CoG initialization function
 //		Implements Tcon (COG) power-on and temperature input to COG
 //		- INPUT:
@@ -72,23 +177,6 @@ void EPD_Driver::COG_initial()
 	digitalWrite(spi_basic.panelReset, HIGH);
 	pinMode( spi_basic.panelCS, OUTPUT );
 	digitalWrite(spi_basic.panelCS, HIGH);
-
-
-	if (spi_basic.panelON_EXT2 != 0xff)
-	{
-		pinMode( spi_basic.panelON_EXT2, OUTPUT );
-		pinMode( spi_basic.panelSPI43_EXT2, OUTPUT );
-		digitalWrite( spi_basic.panelON_EXT2, HIGH );    //PANEL_ON# = 1
-		digitalWrite( spi_basic.panelSPI43_EXT2, LOW );
-	}
-
-	// pinMode(spi_basic.flashCS, OUTPUT);
-    // digitalWrite(spi_basic.flashCS, HIGH);
-	
-	// SPI init
-	// #ifndef SPI_CLOCK_MAX
-		// #define SPI_CLOCK_MAX 16000000
-	// #endif
 
 	SPI.begin();
 
@@ -107,6 +195,8 @@ void EPD_Driver::COG_initial()
 		SPI.beginTransaction(_settingScreen);
 	}
 	#endif
+	
+	_reset(5, 2, 4, 20, 5);
 }
 
 // CoG shutdown function
@@ -134,63 +224,148 @@ void EPD_Driver::COG_powerOff()
 //			- two image data (either BW and 0x00 or BW and BWR types)
 void EPD_Driver::globalUpdate(const uint8_t * data1s, const uint8_t * data2s)
 {
-	_reset(200, 20, 200, 50, 5);
+	
+    COG_getUserData(); // get user data from initial data
 
-	uint8_t dtcl = 0x08; // 0=IST7232, 8=IST7236
-	_sendIndexData(0x01, &dtcl, 1); //DCTL 0x10 of MTP
-
+	uint8_t iDCTL[2];
+    iDCTL[0] = COG_userData.DCTL;
+    iDCTL[1] = 0x00;
+    _sendIndexData(0x01, &iDCTL[0], 2); //DCTL 0x10 of MTP
+	
 	// Send image data
-	if (pdi_size == 0x58)
-	{
-		uint8_t data1[] = {0x00, 0x1f, 0x50, 0x00, 0x1f, 0x03}; // DUW
-		_sendIndexData(0x13, data1, 6); // DUW
-		uint8_t data2[] = {0x00, 0x1f, 0x00, 0xc9}; // DRFW
-		_sendIndexData(0x90, data2, 4); // DRFW
-		uint8_t data3[] = {0x1f, 0x50, 0x14}; // RAM_RW
-		_sendIndexData(0x12, data3, 3); // RAM_RW
-	}
-	else // 7.41"
-	{
-		uint8_t data1[] = {0x00, 0x3b, 0x00, 0x00, 0x1f, 0x03}; // DUW
-		_sendIndexData(0x13, data1, 6); // DUW
-		uint8_t data2[] = {0x00, 0x3b, 0x00, 0xc9}; // DRFW
-		_sendIndexData(0x90, data2, 4); // DRFW
-		uint8_t data3[] = {0x3b, 0x00, 0x14}; // RAM_RW
-		_sendIndexData(0x12, data3, 3); // RAM_RW
-	}
-
+	
+    _sendIndexData(0x13, &COG_userData.DUW[0], 6);
+    _sendIndexData(0x90, &COG_userData.DRFW[0], 4);
+    
+	_sendIndexData(0x12, &COG_userData.RAM_RW[0], 3);
 	// send first frame
     _sendIndexData(0x10, data1s, image_data_size[_size]); // First frame
-
-	if (pdi_size == 0x58)
-	{
-		uint8_t data33[] = {0x1f, 0x50, 0x14}; // RAM_RW
-		_sendIndexData(0x12, data33, 3); // RAM_RW
-	}
-	else
-	{
-		uint8_t data34[] = {0x3b, 0x00, 0x14}; // RAM_RW
-		_sendIndexData(0x12, data34, 3); // RAM_RW
-	}
+	
+    _sendIndexData(0x12, &COG_userData.RAM_RW[0], 3);
 	// send second frame
     _sendIndexData(0x11, data2s, image_data_size[_size]); // Second frame
+	
+	Serial.println("=== File uploaded ===");
 
-	_DCDC_softStart_Mid();
+    uint8_t data4[] = {0x7d};
+    _sendIndexData(0x05, data4, 1);
+    delay(50);
+    uint8_t data5[] = {0x00};
+    _sendIndexData(0x05, data5, 1);
+    delay(1);
+    _sendIndexData(0xD8, &COG_userData.MS_SYNC, 1);
+    _sendIndexData(0xD6, &COG_userData.BVSS, 1);
+    uint8_t data9[] = {0x10};
+    _sendIndexData(0xa7, data9 , 1);
+    delay(2);
+    _sendIndexData(0xa7, data5, 1);
+    delay(10);
+
+	// Temperature sequence
+    _sendIndexData(0x44, data5, 1);
+    uint8_t data11[] = {0x80};
+    _sendIndexData(0x45, data11, 1);
+    _sendIndexData(0xa7, data9, 1);
+    delay(2);
+    _sendIndexData(0xa7, data5, 1);
+    delay(10);
+    uint8_t data12[] = {0x06};
+    _sendIndexData(0x44, data12, 1);
+	
+    uint8_t data13[] = {0x41};
+    _sendIndexData(0x45, data13, 1); // Temperature 0x82@25C
+	//>> IF Fast, (0x45, FU_IDX)
+    
+	_sendIndexData(0xa7, data9, 1);
+    delay(2);
+    _sendIndexData(0xa7, data5, 1);
+    delay(10);
+    _sendIndexData(0x60, &COG_userData.TCON, 1);
+    _sendIndexData(0x61, &COG_userData.STV_DIR, 1);
+    _sendIndexData(0x02, &COG_userData.VCOM, 1);
+
+
+	_DCDC_softStart();
 
 	_displayRefresh();
-
-	_DCDC_softShutdown_Mid();
+	
+	_DCDC_softShutdown();
+	
 	// digitalWrite(spi_basic.panelCS, HIGH);
 }
 
-// Look-up table update function
-//		Enables fast update functionality
+// Global Update function
+//		Implements global update functionality on either small/mid EPD
 //		- INPUT:
-//			- array of image data to iterate on
-//			- size of array
-void EPD_Driver::updateLUT(LUT_data *ltc)
+//			- two image data (either BW and 0x00 or BW and BWR types)
+void EPD_Driver::fastUpdate(const uint8_t * data1s, const uint8_t * data2s)
 {
-	ltb = *ltc;
+	COG_getUserData(); // get user data from initial data
+
+	uint8_t iDCTL[2];
+    iDCTL[0] = COG_userData.DCTL;
+    iDCTL[1] = 0x00;
+    _sendIndexData(0x01, &iDCTL[0], 2); //DCTL 0x10 of MTP
+	
+	// Send image data
+	
+    _sendIndexData(0x13, &COG_userData.DUW[0], 6);
+    _sendIndexData(0x90, &COG_userData.DRFW[0], 4);
+    
+	_sendIndexData(0x12, &COG_userData.RAM_RW[0], 3);
+	// send first frame
+    _sendIndexData(0x10, data1s, image_data_size[_size]); // First frame
+	
+    _sendIndexData(0x12, &COG_userData.RAM_RW[0], 3);
+	// send second frame
+    _sendIndexData(0x11, data2s, image_data_size[_size]); // Second frame
+
+	Serial.println("=== File uploaded ===");
+
+    uint8_t data4[] = {0x7d};
+    _sendIndexData(0x05, data4, 1);
+    delay(50);
+    uint8_t data5[] = {0x00};
+    _sendIndexData(0x05, data5, 1);
+    delay(1);
+    _sendIndexData(0xD8, &COG_userData.MS_SYNC, 1);
+    _sendIndexData(0xD6, &COG_userData.BVSS, 1);
+    uint8_t data9[] = {0x10};
+    _sendIndexData(0xa7, data9 , 1);
+    delay(2);
+    _sendIndexData(0xa7, data5, 1);
+    delay(10);
+
+	// Temperature sequence
+    _sendIndexData(0x44, data5, 1);
+    uint8_t data11[] = {0x80};
+    _sendIndexData(0x45, data11, 1);
+    _sendIndexData(0xa7, data9, 1);
+    delay(2);
+    _sendIndexData(0xa7, data5, 1);
+    delay(10);
+    uint8_t data12[] = {0x06};
+    _sendIndexData(0x44, data12, 1);
+	
+    uint8_t data13[] = {0xc1};
+    _sendIndexData(0x45, data13, 1); //>> IF Fast, (0x45, FU_IDX)
+    
+	_sendIndexData(0xa7, data9, 1);
+    delay(2);
+    _sendIndexData(0xa7, data5, 1);
+    delay(10);
+    _sendIndexData(0x60, &COG_userData.TCON, 1);
+    _sendIndexData(0x61, &COG_userData.STV_DIR, 1);
+    _sendIndexData(0x02, &COG_userData.VCOM, 1);
+
+
+	_DCDC_softStart();
+
+	_displayRefresh();
+	
+	Serial.println("=== FU-upload done ===");
+
+	// digitalWrite(spi_basic.panelCS, HIGH);
 }
 
 // Fast Update function
@@ -198,75 +373,19 @@ void EPD_Driver::updateLUT(LUT_data *ltc)
 //		- INPUT:
 //			- array of image data to iterate on
 //			- size of array
-void EPD_Driver::fastUpdate(const unsigned char* fastImgSet[], uint8_t fastImgSize, uint8_t numLoops)
+void EPD_Driver::fastUpdateSet(const unsigned char* fastImgSet[], uint8_t fastImgSize, uint8_t numLoops)
 {
-	_sendIndexData( 0x02, &register_data[0], 1 );  //Turn off DC/DC
-	while ( digitalRead( spi_basic.panelBusy ) != HIGH );
-	_softReset();
-
-	_fu_Init(ltb);  //load external LUT for fast update, do not soft-reset
-
-	_DCDC_powerOn();
-
 	uint8_t ii = 0;
 	while (ii < numLoops)
 	{
 		for (uint8_t j = 0; j < fastImgSize -1; j++)
 		{
-			_sendIndexData( 0x10, fastImgSet[j], image_data_size[_size] ); //First or previous frame
-			_sendIndexData( 0x13, fastImgSet[j+1], image_data_size[_size] );   //Second or new frame
-			
-			_sendIndexData( 0x50, ltb.vcomIntrval, 1 );    //Vcom and data interval setting
-			_displayRefresh();
-			
-			// add Driver Fix
-			if (pdi_cp == 0x0C)
-			{
-				while( digitalRead( spi_basic.panelBusy ) != HIGH );
-				_sendIndexData( 0x50, ltb.vcomIntrval_fix, 1 );
-			}
+			fastUpdate(fastImgSet[j+1], fastImgSet[j]);
 		}
 		ii++;
 	}
-}
-
-// Partial Update function
-//		Implements partial update functionality
-//		- INPUT:
-//			- array of image data to iterate on
-//			- window configuration array
-void EPD_Driver::partialUpdate(const unsigned char* partialImgSet[], uint8_t partialImgConfig[5], long windowSize, uint8_t numLoops)
-{
-	_sendIndexData( 0x02, &register_data[0], 1 );  //Turn off DC/DC
-	while ( digitalRead( spi_basic.panelBusy ) != HIGH );
-	_softReset();
-
-	_fu_Init(ltb);  //load external LUT for fast update, do not soft-reset
-
-	_DCDC_powerOn();
 	
-	_pu_Init(partialImgConfig);
-
-	uint8_t i=0;
-	while (i < numLoops)
-	{
-		for (uint8_t j=0; j < partialImgConfig[0] -1; j++)
-		{
-			_sendIndexData( 0x10, partialImgSet[j], windowSize ); //First or previous frame
-			_sendIndexData( 0x13, partialImgSet[j+1], windowSize );   //Second or new frame
-			
-			_sendIndexData( 0x50, ltb.vcomIntrval, 1 );    //Vcom and data interval setting
-			_displayRefresh();
-			
-			// add Driver Fix
-			if (pdi_cp == 0x0C)
-			{
-				while( digitalRead( spi_basic.panelBusy ) != HIGH );
-				_sendIndexData( 0x50, ltb.vcomIntrval_fix, 1 );
-			}
-		}
-		i++;
-	}
+	_DCDC_softShutdown();
 }
 
 
@@ -297,15 +416,6 @@ void EPD_Driver::_sendIndexData( uint8_t index, const uint8_t *data, uint32_t le
 	}
 	delayMicroseconds(tempp);
 	digitalWrite( spi_basic.panelCS, HIGH );     //CS High
-}
-
-// CoG soft-reset function
-//		- INPUT:
-//			- none but requires global variables on SPI pinout and config register data
-void EPD_Driver::_softReset()
-{
-	_sendIndexData( 0x00, &register_data[1], 1 );	//Soft-reset, will reset to run the internal LUT for global update
-	while( digitalRead( spi_basic.panelBusy ) != HIGH );
 }
 
 // EPD Screen refresh function
@@ -353,134 +463,74 @@ void EPD_Driver::_DCDC_powerOn()
 // DC-DC soft-start command
 //		Implemented after image data are uploaded to CoG
 //		Specific to mid-sized EPDs only
-void EPD_Driver::_DCDC_softStart_Mid()
+void EPD_Driver::_DCDC_softStart()
 {
-	// COG init
-    uint8_t data4[] = {0x7d};
-    _sendIndexData(0x05, data4, 1);
-    delay(200);
-    uint8_t data5[] = {0x00};
-    _sendIndexData(0x05, data5, 1);
-    delay(10);
-    uint8_t data6[] = {0x3f};
-    _sendIndexData(0xc2, data6, 1);
-    delay(1);
-    uint8_t data7[] = {0x00};
-    _sendIndexData(0xd8, data7, 1); // MS_SYNC mtp_0x1d
-    uint8_t data8[] = {0x00};
-    _sendIndexData(0xd6, data8, 1); // BVSS mtp_0x1e
-    uint8_t data9[] = {0x10};
-    _sendIndexData(0xa7, data9 , 1);
-    delay(100);
-    _sendIndexData(0xa7, data5, 1);
-    delay(100);
-    // uint8_t data10[] = {0x00, 0x02 };
-
-	if (pdi_size == 0x58)
-	{
-		uint8_t data10[] = {0x00, 0x01}; // OSC
-		_sendIndexData(0x03, data10, 2); // OSC mtp_0x12
-	}
-	else
-	{
-		uint8_t data10[] = {0x00, 0x01}; // OSC
-		_sendIndexData(0x03, data10, 2); // OSC mtp_0x12
-	}
-
-    _sendIndexData(0x44, data5, 1);
-    uint8_t data11[] = {0x80};
-    _sendIndexData(0x45, data11, 1);
-    _sendIndexData(0xa7, data9, 1);
-    delay(100);
-    _sendIndexData(0xa7, data7, 1);
-    delay(100);
-    uint8_t data12[] = {0x06};
-    _sendIndexData(0x44, data12, 1);
-    uint8_t data13[] = {0x82};
-    _sendIndexData(0x45, data13, 1); // Temperature 0x82@25C
-    _sendIndexData(0xa7, data9, 1);
-    delay(100);
-    _sendIndexData(0xa7, data7, 1);
-    delay(100);
-    uint8_t data14[] = {0x25};
-    _sendIndexData(0x60, data14, 1); // TCON mtp_0x0b
-    // uint8_t data15[] = {0x01 };
-
-	if (pdi_size == 0x58)
-	{
-		uint8_t data15[] = {0x00}; // STV_DIR
-		_sendIndexData(0x61, data15, 1); // STV_DIR mtp_0x1c
-	}
-	else
-	{
-		uint8_t data15[] = {0x00}; // STV_DIR
-		_sendIndexData(0x61, data15, 1); // STV_DIR mtp_0x1c
-	}
-
-    uint8_t data16[] = {0x00};
-    _sendIndexData(0x01, data16, 1); // DCTL mtp_0x10
-    uint8_t data17[] = {0x00};
-    _sendIndexData(0x02, data17, 1); // VCOM mtp_0x11
-
-    // DC-DC soft-start
-    uint8_t index51[] = {0x50, 0x01, 0x0a, 0x01};
-    _sendIndexData(0x51, &index51[0], 2);
-    uint8_t index09[] = {0x1f, 0x9f, 0x7f, 0xff};
-
-    for (int value = 1; value <= 4; value++)
+    uint8_t iPH[2], iREP;
+    for (uint8_t value = 0; value < 4; value++)
     {
-        _sendIndexData(0x09, &index09[0], 1);
-        index51[1] = value;
-        _sendIndexData(0x51, &index51[0], 2);
-        _sendIndexData(0x09, &index09[1], 1);
-        delay(2);
+        iPH[0] = COG_userData.SS[value].PHLINI_BSTSWa;
+        iPH[1] = COG_userData.SS[value].PHHINI_BSTSWb;
+        if (COG_userData.SS[value].FORMAT_REPEAT & 0x80) // format1
+        {
+            for (iREP = 0; iREP < (COG_userData.SS[value].FORMAT_REPEAT & 0x7f); iREP++)
+            {
+                _sendIndexData(0x09, &COG_userData.SS[value].BSTSWa_RESERVE, 1);
+                iPH[0] += COG_userData.SS[value].PHLVAR_DELAYa;
+                iPH[1] += COG_userData.SS[value].PHHVAR_DELAYb;
+                _sendIndexData(0x51, iPH, 2);
+                _sendIndexData(0x09, &COG_userData.SS[value].BSTSWb_RESERVE, 1);
+                if (COG_userData.SS[value].DELAY_RESERVE & 0x80)
+                {
+                    delay(COG_userData.SS[value].DELAY_RESERVE & 0x7f); // ms
+                }
+                // else;
+                delayMicroseconds(10 * COG_userData.SS[value].DELAY_RESERVE & 0x7f); // 10us
+            }
+        }
+        else // format2
+        {
+            for (iREP = 0; iREP < (COG_userData.SS[value].FORMAT_REPEAT & 0x7f); iREP++)
+            {
+                _sendIndexData(0x09, &COG_userData.SS[value].PHLINI_BSTSWa, 1);
+                if (COG_userData.SS[value].PHLVAR_DELAYa & 0x80)
+                {
+                    delay(COG_userData.SS[value].PHLVAR_DELAYa & 0x7f); // ms
+                }
+                // else;
+                delayMicroseconds(10 * COG_userData.SS[value].PHLVAR_DELAYa & 0x7f); // 10us delaySysTick_10us
+
+                _sendIndexData(0x09, &COG_userData.SS[value].PHHINI_BSTSWb, 1);
+                if (COG_userData.SS[value].PHHVAR_DELAYb & 0x80)
+                {
+                    delay(COG_userData.SS[value].PHHVAR_DELAYb & 0x7f); // ms
+                }
+                // else;
+                delayMicroseconds(10 * COG_userData.SS[value].PHHVAR_DELAYb & 0x7f); // 10us delaySysTick_10us
+            }
+        }
     }
-    for (int value = 1; value <= 10; value++)
-    {
-        _sendIndexData(0x09, &index09[0], 1);
-        index51[3] = value;
-        _sendIndexData(0x51, &index51[2], 2);
-        _sendIndexData(0x09, &index09[1], 1);
-        delay(2);
-    }
-    for (int value = 3; value <= 10; value++)
-    {
-        _sendIndexData(0x09, &index09[2], 1);
-        index51[3] = value;
-        _sendIndexData(0x51, &index51[2], 2);
-        _sendIndexData(0x09, &index09[3], 1);
-        delay(2);
-    }
-    for (int value = 9; value >= 2; value--)
-    {
-        _sendIndexData(0x09, &index09[2], 1);
-        index51[2] = value;
-        _sendIndexData(0x51, &index51[2], 2);
-        _sendIndexData(0x09, &index09[3], 1);
-        delay(2);
-    }
-    _sendIndexData(0x09, &index09[3], 1);
-    delay(10);
 }
 
 // DC-DC soft-shutdown command
 //		Implemented after image data are uploaded to CoG
 //		Specific to mid-sized EPDs only
-void EPD_Driver::_DCDC_softShutdown_Mid()
+void EPD_Driver::_DCDC_softShutdown()
 {
 	// DC-DC off
     while (digitalRead(spi_basic.panelBusy) != HIGH)
     {
         delay(100);
     }
-    uint8_t data19[] = {0x7f};
+    uint8_t data19[] = {0x7b};
     _sendIndexData(0x09, data19, 1);
-    uint8_t data20[] = {0x7d};
+    uint8_t data20[] = {0x5d};
     _sendIndexData(0x05, data20, 1);
+	uint8_t data555[] = {0x7a};
+    _sendIndexData(0x09, data555, 1);
+	delay(15);
 	uint8_t data55[] = {0x00};
     _sendIndexData(0x09, data55, 1);
-    delay(200);
-
+    
     while (digitalRead(spi_basic.panelBusy) != HIGH)
     {
         delay(100);
@@ -491,70 +541,4 @@ void EPD_Driver::_DCDC_softShutdown_Mid()
     // digitalWrite(panelON_PIN, LOW); // PANEL_OFF# = 0
 
     digitalWrite(spi_basic.panelCS, HIGH); // CS# = 1
-}
-
-// Fast Update initialization function
-//		Initializes relevant registers for enabling fast update functionality
-//		- INPUT:
-//			- LUT data structure
-void EPD_Driver::_fu_Init(LUT_data ltc)
-{
-	_sendIndexData( 0x00, ltc.panelSet, 2 );    //Panel Settings
-	_sendIndexData( 0x50, ltc.vcomIntrval, 1 );    //Vcom and data interval setting
-	_sendIndexData( 0x30, ltc.PLLframert, 1 );    //PLL_Frame rate
-	_sendIndexData( 0x82, ltc.vcomDC, 1 );    //VCOM_DC
-
-	// send LUT
-	_sendIndexData( 0x20, ltc.lutC, 42 );      //VCOM LUT(LUTC)
-	_sendIndexData( 0x23, ltc.lutWb_W, 42 );      //W2B(LUTWB / LUTW)
-	_sendIndexData( 0x22, ltc.lutBW_R, 42 );    //B2W((LUTBW / LUTR))
-	_sendIndexData( 0x21, ltc.lutWW, 42 );    //W2W(LUTWW) not available in BW mode  
-	_sendIndexData( 0x24, ltc.lutBB_B, 42 );    //B2B(LUTBB / LUTB)
-	
-	// add Driver Fix
-	if (pdi_cp == 0x0C)
-	{
-		// while( digitalRead( spi_basic.busy ) != HIGH );
-		_sendIndexData( 0x50, ltb.vcomIntrval_fix, 1 );
-	}
-}
-
-// Partial Update initialization function
-//		Initializes relevant registers for enabling partial update functionality
-//		- INPUT:
-//			- window configuration array
-void EPD_Driver::_pu_Init(uint8_t partialImgConfig[5])
-{
-	uint8_t windowSource[2] = {};	// HRST, HRED
-	uint8_t windowGate[2] = {};	// VRST, VRED
-	
-	memcpy(windowSource, &partialImgConfig[1], sizeof(windowSource));
-	memcpy(windowGate, &partialImgConfig[3], sizeof(windowGate));
-
-	if ((pdi_size == 0x37) || (pdi_size == 0x43))
-	{
-		uint8_t PU_data[7];
-		PU_data[0] = (windowSource[0]<<3)&0xf8;     // source start
-		PU_data[1] = ((windowSource[1]<<3)&0xf8)+0x07;     // source end
-		PU_data[2] = (windowGate[0]>>8)&0x01;       // Gate start MSB
-		PU_data[3] = windowGate[0]&0xff;            // Gate start LSB
-		PU_data[4] = (windowGate[1]>>8)&0x01;       // Gate end MSB
-		PU_data[5] = windowGate[1]&0xff;            // Gate end LSB
-		PU_data[6] = 0x00;
-		_sendIndexData(0x90,&PU_data[0],7);
-		_sendIndexData(0x91,&PU_data[0],0);     //0x91 doesn’t have data
-	}
-	else
-	{
-		uint8_t PU_data[7];
-		PU_data[0] = (windowSource[0]<<3)&0xf8;     // source start
-		PU_data[1] = (windowSource[1]<<3)|0x07;     // source end
-		PU_data[2] = (windowGate[0]>>8)&0x01;       // Gate start MSB
-		PU_data[3] = windowGate[0]&0xff;            // Gate start LSB
-		PU_data[4] = (windowGate[1]>>8)&0x01;       // Gate end MSB
-		PU_data[5] = windowGate[1]&0xff;            // Gate end LSB
-		PU_data[6] = 0x01;
-		_sendIndexData(0x90,&PU_data[0],7);
-		_sendIndexData(0x91,&PU_data[0],0);     //0x91 doesn’t have data
-	}
 }

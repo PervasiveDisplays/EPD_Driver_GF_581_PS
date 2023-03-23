@@ -47,13 +47,14 @@ class EPD_Driver
 {
 	// Data structures
 	pins_t spi_basic = {0};
-  LUT_data ltb;
 	
   public:
 
 	EPD_Driver(eScreen_EPD_t eScreen_EPD, pins_t board);
     
 	// CoG Functions
+
+    void COG_getUserData();
 
 	///
   /// @brief COG initialization
@@ -74,6 +75,7 @@ class EPD_Driver
   /// @note Automatically switches between small and medium-sized displays
   ///
 	void globalUpdate(const uint8_t *data1s, const uint8_t *data2s);
+	void fastUpdate(const uint8_t *data1s, const uint8_t *data2s);
 
   ///
   /// @brief Fast update function
@@ -82,20 +84,7 @@ class EPD_Driver
   /// @param numLoops number of iterations through fastImgSet
   /// @note These parameters are located in the fastupdate_src folder
   ///
-	void fastUpdate(const unsigned char* fastImgSet[], uint8_t fastImgSize, uint8_t numLoops);
-	
-  ///
-  /// @brief Partial update function
-  /// @param partialImgSet[] array of Image data
-  /// @param partialImgConfig window configuration parameters
-  /// @param windowSize Partial update window dimension
-  /// @param numLoops number of iterations through fastImgSet
-  /// @note These parameters are located in the fastupdate_src folder
-  ///
-	void partialUpdate(const unsigned char* partialImgSet[], uint8_t partialImgConfig[5], long windowSize, uint8_t numLoops);
-
-  /// @brief Function to load LUT from file
-	void updateLUT(LUT_data *ltc);
+	void fastUpdateSet(const unsigned char* fastImgSet[], uint8_t fastImgSize, uint8_t numLoops);
 
   protected:
 
@@ -108,7 +97,6 @@ class EPD_Driver
   /// @param len length or size of data array
   ///
 	void _sendIndexData( uint8_t index, const uint8_t *data, uint32_t len ); 
-
   ///
   /// @brief Soft-reset of CoG driver
   /// @note 
@@ -139,19 +127,13 @@ class EPD_Driver
   /// @brief DC-DC soft-start command
   /// @note Specific to mid-sized EPDs only
   ///
-  void _DCDC_softStart_Mid();
+  void _DCDC_softStart();
 
   ///
   /// @brief DC-DC soft-shutdown command
   /// @note Specific to mid-sized EPDs only
   ///
-	void _DCDC_softShutdown_Mid();
-
-  ///
-  /// @brief Fast and partial update initialization Functions
-  ///
-	void _fu_Init(LUT_data ltc);
-	void _pu_Init(uint8_t partialImgConfig[5]);
+	void _DCDC_softShutdown();
 	
 	// Internal global variables
 	const char* pdi_brd;
