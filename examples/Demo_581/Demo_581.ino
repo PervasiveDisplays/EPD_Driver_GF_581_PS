@@ -6,8 +6,8 @@
   Hardware Suggested:
   * Launchpad MSP432P401R or (Tiva-C) with TM4C123/Arduino M0 Pro/Raspberry Pi Pico
   * EPD Extension Kit (EXT2 or EXT3)
-  * 5.8" EPD
-  * 20-pin rainbow jumper cable
+  * 5.81" EPD
+  * 10-pin rainbow jumper cable
 */
 
 #include <EPD_Driver.h>
@@ -18,12 +18,12 @@
 #include "fastupdate_src/FuPu_Data_581.h"
 //------------------------------------------------------------
 
+#define EPD_SIZE eScreen_EPD_581
+#define BOARD_TYPE boardRaspberryPiPico_RP2040_EXT3
+
 void setup()
 {
-	Serial.begin(115200);
-	// EPD_Driver epdtest(eScreen_EPD_581, boardLaunchPad_EXT3);
-	EPD_Driver epdtest(eScreen_EPD_581, boardRaspberryPiPico_RP2040_EXT3);
-	// EPD_Driver epdtest(eScreen_EPD_581, boardESP32DevKitC_EXT3);
+	EPD_Driver epdtest(EPD_SIZE, BOARD_TYPE);
 
 	// Initialize CoG
 	epdtest.COG_initial();

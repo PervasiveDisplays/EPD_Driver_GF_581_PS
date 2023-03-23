@@ -1,9 +1,8 @@
 # Introduction
- *  This library code implements the driving code of [Aurora(V231) or Spectra EPDs with iTC driver](https://www.pervasivedisplays.com/products/epd-product-selection/) made by [Pervasive Displays Inc (PDi)](https://www.pervasivedisplays.com/). This is compatible with either [EPD Extension Kit Gen 2 (EXT2)](https://www.pervasivedisplays.com/product/epd-extension-kit-gen-2-ext2/) and [EPD Extension Kit Gen 3 (EXT3)](https://www.pervasivedisplays.com/product/epd-extension-kit-gen-3-ext3/).
- *  It implements the global update mode (GU). However, the same code for fast and partial update are shared upon request. Contact [PDi](https://www.pervasivedisplays.com/technical-support/) for further details.
- *  The library supports the following EPD sizes: 5.81", 7.41"
+ *  This library code implements the driving code of [Aurora(V231) EPD with iTC driver and embedded OTP LUT](https://www.pervasivedisplays.com/products/) made by [Pervasive Displays Inc (PDi)](https://www.pervasivedisplays.com/). This is compatible with [EPD Extension Kit Gen 3 (EXT3)](https://www.pervasivedisplays.com/product/epd-extension-kit-gen-3-ext3/).
+ *  It implements the global (GU) and fast update modes (FU).
+ *  The library supports the following EPD sizes: 5.81"
  *  This library was tested with Launchpad (Tiva-C) with TM4C123, MSP432P401R, Arduino M0 Pro, and Raspberry Pi Pico.
- *	Driving code for Large-sized EPD (9" and greater) will soon be included in a later release.
 
 # Installation
   Download the ZIP file of this library and install as instructed in [Arduino](https://www.arduino.cc/en/guide/libraries) or Energia.
@@ -37,8 +36,6 @@
     RST = 6
     MOSI = 12
     ECSM = 8
-    PNLON = 11	only for EXT2
-    BS = 9	only for EXT2
  ```
   *  If using Raspberry Pi Pico,
   ```
@@ -48,35 +45,28 @@
     RST = 11
     MOSI = 19
     ECSM = 17
-    PNLON = 8	only for EXT2
-    BS = 7	only for EXT2
  ```
-For further wiring guidance, check out the User Manuals of [EXT2](https://www.pervasivedisplays.com/wp-content/uploads/2019/06/EPD-Extension-Kit-Gen2-EXT2_User-Guide_Rev08_20191111.pdf) and [EXT3](https://www.pervasivedisplays.com/wp-content/uploads/2021/01/User-Manual-of-EXT3_Rev01_Jan-2021-1.pdf).
+For further wiring guidance, check out the User Manual [EXT3](https://docs.pervasivedisplays.com/epd-usage/development-kits/ext3-1).
 
 # EPD_Driver Demo
- *  The sample code implements a global update functionality for a [5.81" Aurora Mb (V231) EPD (E2581CS0B1)](https://www.pervasivedisplays.com/product/5-8-e-ink-display-aurora-mb-v231/).  
+ *  The sample code implements both global and fast update functionality for a [5.81" Monochrome+Fast EPD (E2581PS0B1)](https://www.pervasivedisplays.com/product/5-8-e-ink-display-aurora-mb-v231/).  
  
  First, a BW(black and white) image is flashed.  
- <p align="center"><img src="https://github.com/PervasiveDisplays/EPD_Driver_GU_mid/blob/main/examples/Demo_581/globalupdate_src/images/5.81/581_720x256_BW.bmp"></p>
- After a second, a BWR (black, white, red) image follows.  
- <p align="center"><img src="https://github.com/PervasiveDisplays/EPD_Driver_GU_mid/blob/main/examples/Demo_581/globalupdate_src/images/5.81/581_720x256_BWR.bmp"></p>
- 
- *  The demo currently includes sample images for all the supported EPD sizes mentioned above. To implement global update demo on these other sizes, update the following lines
+  Then, after a two-second delay, a sequence of BW fast images are flashed.  
+  
+ *  The demo currently includes sample images for all the supported EPD sizes mentioned above. To implement the demo on these other sizes, update the following lines
 ``` c++
 //------------------------------------------------------------
 // DEMO Image Set <Comment out when in User Mode>
-// Screen Size: 581, 741
+// Screen Size: 581
 #define SCREEN 581
 #include "globalupdate_src/demoImageData.h"
-// User Mode Image Set
-//#include "globalupdate_src/userImageData.h"
+#include "fastupdate_src/FuPu_Data_581.h"
 ```
  *  Then select the appropriate EPD size, development board and extension kit:
-```
-  // EPD_Driver epdtest(eScreen_EPD_581, boardLaunchPad_EXT3);
-  // EPD_Driver epdtest(eScreen_EPD_581, boardArduinoM0Pro_EXT2);
-  EPD_Driver epdtest(eScreen_EPD_581, boardRaspberryPiPico_RP2040_EXT3);
-  // EPD_Driver epdtest(eScreen_EPD_581, boardRaspberryPiPico_RP2040_EXT2);
+``` c++
+#define EPD_SIZE eScreen_EPD_581
+#define BOARD_TYPE boardRaspberryPiPico_RP2040_EXT3
 ```
 
 #  Tech Support
