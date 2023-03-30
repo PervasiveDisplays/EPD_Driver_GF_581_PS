@@ -5,7 +5,7 @@
 
 // 5.81"
 
-#include "fp_data\images581.h"
+#include "fp_data/images581.h"
 
 #define FastPic_1 (uint8_t *) & image_581_720x256_BW_mono
 #define FastPic_2 (uint8_t *) & image_581_720x256_BW_product
